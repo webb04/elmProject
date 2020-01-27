@@ -5,33 +5,43 @@ import Html exposing (..)
 import Html.Events exposing (onClick)
 
 main =
-  Browser.sandbox { init = 0, update = update, view = view }
+  Browser.sandbox { init = init, update = update, view = view }
 
-type Msg = Increment | Decrement
+type Msg = Click
 
 type Square = Blank | Naught | Cross
 
-grid = List.repeat 3 Blank
--- (List.repeat 3 Blank)
+type alias Grid = List (List Square)
+type alias Model = Grid
 
+init = List.repeat 3 (List.repeat 3 Blank)
+
+viewRow: List Square -> Html Msg
+viewRow squares =
+  div []
+    (List.map viewSquare squares)
+
+update: Msg -> Model -> Model
 update msg model =
   case msg of
-    Increment ->
-      model + 1
+    Click -> 
+      updateGrid model
 
-    Decrement ->
-      model - 1
+updateGrid: Grid -> Grid
+updateGrid model =
+  List.repeat 3 (List.repeat 3 Cross)
 
 viewSquare: Square -> Html Msg
 viewSquare square =
   case square of
     Blank ->
-      div [] [ text "⬛️" ]
+      span [ onClick Click ] [ text "⬛️" ]
     Cross ->
-      div [] [ text "❌" ]
+      span [] [ text "❌" ]
     Naught ->
-      div [] [ text "🔴" ]
+      span [] [ text "🔴" ]
 
+view: Model -> Html Msg
 view model =
   div []
-    (List.map viewSquare grid)
+    (List.map viewRow model)
