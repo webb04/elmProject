@@ -8,18 +8,25 @@ main =
   Browser.sandbox { init = init, update = update, view = view }
 
 type Msg = Click Int
-
 type Player = Naughty | Crossy
 type Square = Blank | Naught | Cross
 
 type alias Grid = List Square
-type alias Model = { grid: Grid, player: Player }
 
-init = { grid = List.repeat 9 Blank, player = Naughty }
+type GameState = CurrentlyPlaying Player | Draw | Winner Player
+type alias Model = { grid: Grid, player: Player, gameState: GameState }
+
+init = { grid = List.repeat 9 Blank, player = Naughty, gameState = CurrentlyPlaying Naughty }
 
 getSquare: Player -> Square
 getSquare player =
   if (player == Naughty) then Naught else Cross
+
+checkForWin: Grid -> Player -> Maybe Player
+checkForWin grid player = Nothing
+
+gameState: GameState
+gameState = Winner Naughty
 
 update: Msg -> Model -> Model
 update msg model =
@@ -27,7 +34,8 @@ update msg model =
     Click index -> 
       { 
         grid = (List.take index model.grid) ++ [getSquare model.player] ++ (List.drop (index + 1) model.grid),
-        player = if (model.player == Naughty) then Crossy else Naughty
+        player = if (model.player == Naughty) then Crossy else Naughty,
+        gameState = gameState
       }
 
 updateGrid: Grid -> Grid
@@ -52,6 +60,12 @@ viewSquare index square =
     Naught ->
       span [] ([ text "🔴" ] ++ childElements)
 
+viewPlayer: Player -> String
+viewPlayer player =
+  case player of
+     Naughty -> "Naughty"
+     Crossy -> "Crossy"
+
 view: Model -> Html Msg
 view model =
   div [
@@ -61,5 +75,5 @@ view model =
     style "justify-content" "center",
     style "align-items" "center"]
     [ div []
-      (List.indexedMap viewSquare model.grid) ]
+      (List.indexedMap viewSquare model.grid), h1 [] [text (viewPlayer model.player)] ]
   
