@@ -68,12 +68,16 @@ viewPlayer player =
 
 view: Model -> Html Msg
 view model =
-  div [
-    style "height" "100vh",
-    style "width" "100vw",
-    style "display" "flex",
-    style "justify-content" "center",
-    style "align-items" "center"]
-    [ div []
-      (List.indexedMap viewSquare model.grid), h1 [] [text (viewPlayer model.player)] ]
+  case model.gameState of
+    Winner player ->
+      text ((viewPlayer player) ++ " has done it 🎉")
+    _ -> 
+      div [
+        style "height" "100vh",
+        style "width" "100vw",
+        style "display" "flex",
+        style "justify-content" "center",
+        style "align-items" "center"]
+        [ div []
+          (List.indexedMap viewSquare model.grid), h1 [] [text (viewPlayer model.player)] ]
   
