@@ -65,10 +65,15 @@ f combination = case combination of
     _ -> Nothing
         
 
-checkForWin : List Combination -> GameState
-checkForWin _ =
-  
-    CurrentlyPlaying Naughty
+checkForWin : List Combination -> Maybe Player
+checkForWin combinations =
+    case combinations of 
+        (combination::tail) ->
+            case f combination of 
+                Just player -> Just player
+                Nothing -> checkForWin tail
+        -- (tail::combination::cn) -> f combination
+        [] -> Nothing
 
 
 gameState : Model -> GameState
@@ -90,15 +95,26 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Click index ->
-            { grid = List.take index model.grid ++ [ getSquare model.player ] ++ List.drop (index + 1) model.grid
-            , player =
-                if model.player == Naughty then
-                    Crossy
+            let
+                grid = List.take index model.grid ++ [ getSquare model.player ] ++ List.drop (index + 1) model.grid
+                combinations = generateCombinations grid
+                winner = checkForWin combinations
 
-                else
-                    Naughty
-            , gameState = CurrentlyPlaying Naughty
-            }
+                player =
+                    if model.player == Naughty then
+                        Crossy
+
+                    else
+                        Naughty
+                gs = case winner of 
+                    Just p -> Winner p
+                    Nothing -> CurrentlyPlaying player
+            in
+            
+                { grid = grid
+                , player = player
+                , gameState = gs
+                }
 
 
 updateGrid : Grid -> Grid
