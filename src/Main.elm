@@ -56,24 +56,34 @@ getSquare player =
         Crossy ->
             Cross
 
-f : Combination -> Maybe Player
-f combination = case combination of
-    (Naught, Naught, Naught) -> Just Naughty
-        
 
-    (Cross, Cross, Cross) -> Just Crossy
-    _ -> Nothing
-        
+f : Combination -> Maybe Player
+f combination =
+    case combination of
+        ( Naught, Naught, Naught ) ->
+            Just Naughty
+
+        ( Cross, Cross, Cross ) ->
+            Just Crossy
+
+        _ ->
+            Nothing
+
 
 checkForWin : List Combination -> Maybe Player
 checkForWin combinations =
-    case combinations of 
-        (combination::tail) ->
-            case f combination of 
-                Just player -> Just player
-                Nothing -> checkForWin tail
+    case combinations of
+        combination :: tail ->
+            case f combination of
+                Just player ->
+                    Just player
+
+                Nothing ->
+                    checkForWin tail
+
         -- (tail::combination::cn) -> f combination
-        [] -> Nothing
+        [] ->
+            Nothing
 
 
 gameState : Model -> GameState
@@ -109,9 +119,14 @@ update msg model =
     case msg of
         Click index ->
             let
-                grid = List.take index model.grid ++ [ getSquare model.player ] ++ List.drop (index + 1) model.grid
-                combinations = generateCombinations grid
-                winner = checkForWin combinations
+                grid =
+                    List.take index model.grid ++ [ getSquare model.player ] ++ List.drop (index + 1) model.grid
+
+                combinations =
+                    winningCombinations grid
+
+                winner =
+                    checkForWin combinations
 
                 player =
                     if model.player == Naughty then
@@ -119,15 +134,19 @@ update msg model =
 
                     else
                         Naughty
-                gs = case winner of 
-                    Just p -> Winner p
-                    Nothing -> CurrentlyPlaying player
+
+                gs =
+                    case winner of
+                        Just p ->
+                            Winner p
+
+                        Nothing ->
+                            CurrentlyPlaying player
             in
-            
-                { grid = grid
-                , player = player
-                , gameState = gs
-                }
+            { grid = grid
+            , player = player
+            , gameState = gs
+            }
 
 
 updateGrid : Grid -> Grid
