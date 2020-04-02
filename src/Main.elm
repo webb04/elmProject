@@ -81,8 +81,8 @@ gameState model =
     CurrentlyPlaying Naughty
 
 
-generateCombinations : Grid -> List Combination
-generateCombinations grid =
+winningCombinations : Grid -> List Combination
+winningCombinations grid =
     case grid of
         [ zero, one, two, three, four, five, six, seven, eight ] ->
             [ ( zero, one, two ), ( three, four, five ), ( six, seven, eight ) ]
