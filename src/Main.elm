@@ -85,7 +85,20 @@ winningCombinations : Grid -> List Combination
 winningCombinations grid =
     case grid of
         [ zero, one, two, three, four, five, six, seven, eight ] ->
-            [ ( zero, one, two ), ( three, four, five ), ( six, seven, eight ) ]
+            [ --horizontal
+              ( zero, one, two )
+            , ( three, four, five )
+            , ( six, seven, eight )
+
+            --vertical
+            , ( zero, three, six )
+            , ( one, four, seven )
+            , ( two, five, eight )
+
+            --diagonal
+            , ( zero, four, eight )
+            , ( two, four, six )
+            ]
 
         _ ->
             []
