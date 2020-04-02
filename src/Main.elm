@@ -4,14 +4,16 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
+import Random
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
 type Msg
     = Click Int
+    | PlayerGenerated Player
 
 
 type Player
@@ -43,8 +45,19 @@ type alias Model =
     { grid : Grid, player : Player, gameState : GameState }
 
 
-init =
-    { grid = List.repeat 9 Blank, player = Naughty, gameState = CurrentlyPlaying Naughty }
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { grid = List.repeat 9 Blank, player = Naughty, gameState = CurrentlyPlaying Naughty }, Random.generate PlayerGenerated getRandomPlayer )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none
+
+
+getRandomPlayer : Random.Generator Player
+getRandomPlayer =
+    Random.uniform Naughty [ Crossy ]
 
 
 getSquare : Player -> Square
@@ -114,7 +127,7 @@ winningCombinations grid =
             []
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Click index ->
@@ -143,10 +156,17 @@ update msg model =
                         Nothing ->
                             CurrentlyPlaying player
             in
-            { grid = grid
-            , player = player
-            , gameState = gs
-            }
+            ( { grid = grid
+              , player = player
+              , gameState = gs
+              }
+            , Cmd.none
+            )
+
+        PlayerGenerated player ->
+            ( { model | player = player }
+            , Cmd.none
+            )
 
 
 updateGrid : Grid -> Grid
