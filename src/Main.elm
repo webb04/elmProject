@@ -4,14 +4,16 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
+import Random
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
 type Msg
     = Click Int
+    | PlayerGenerated Player
 
 
 type Player
@@ -43,8 +45,19 @@ type alias Model =
     { grid : Grid, player : Player, gameState : GameState }
 
 
-init =
-    { grid = List.repeat 9 Blank, player = Naughty, gameState = CurrentlyPlaying Naughty }
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { grid = List.repeat 9 Blank, player = Naughty, gameState = CurrentlyPlaying Naughty }, Random.generate PlayerGenerated getRandomPlayer )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none
+
+
+getRandomPlayer : Random.Generator Player
+getRandomPlayer =
+    Random.uniform Naughty [ Crossy ]
 
 
 getSquare : Player -> Square
@@ -56,24 +69,34 @@ getSquare player =
         Crossy ->
             Cross
 
-f : Combination -> Maybe Player
-f combination = case combination of
-    (Naught, Naught, Naught) -> Just Naughty
-        
 
-    (Cross, Cross, Cross) -> Just Crossy
-    _ -> Nothing
-        
+f : Combination -> Maybe Player
+f combination =
+    case combination of
+        ( Naught, Naught, Naught ) ->
+            Just Naughty
+
+        ( Cross, Cross, Cross ) ->
+            Just Crossy
+
+        _ ->
+            Nothing
+
 
 checkForWin : List Combination -> Maybe Player
 checkForWin combinations =
-    case combinations of 
-        (combination::tail) ->
-            case f combination of 
-                Just player -> Just player
-                Nothing -> checkForWin tail
+    case combinations of
+        combination :: tail ->
+            case f combination of
+                Just player ->
+                    Just player
+
+                Nothing ->
+                    checkForWin tail
+
         -- (tail::combination::cn) -> f combination
-        [] -> Nothing
+        [] ->
+            Nothing
 
 
 gameState : Model -> GameState
@@ -81,24 +104,42 @@ gameState model =
     CurrentlyPlaying Naughty
 
 
-generateCombinations : Grid -> List Combination
-generateCombinations grid =
+winningCombinations : Grid -> List Combination
+winningCombinations grid =
     case grid of
         [ zero, one, two, three, four, five, six, seven, eight ] ->
-            [ ( zero, one, two ), ( three, four, five ), ( six, seven, eight ) ]
+            [ --horizontal
+              ( zero, one, two )
+            , ( three, four, five )
+            , ( six, seven, eight )
+
+            --vertical
+            , ( zero, three, six )
+            , ( one, four, seven )
+            , ( two, five, eight )
+
+            --diagonal
+            , ( zero, four, eight )
+            , ( two, four, six )
+            ]
 
         _ ->
             []
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Click index ->
             let
-                grid = List.take index model.grid ++ [ getSquare model.player ] ++ List.drop (index + 1) model.grid
-                combinations = generateCombinations grid
-                winner = checkForWin combinations
+                grid =
+                    List.take index model.grid ++ [ getSquare model.player ] ++ List.drop (index + 1) model.grid
+
+                combinations =
+                    winningCombinations grid
+
+                winner =
+                    checkForWin combinations
 
                 player =
                     if model.player == Naughty then
@@ -106,15 +147,26 @@ update msg model =
 
                     else
                         Naughty
-                gs = case winner of 
-                    Just p -> Winner p
-                    Nothing -> CurrentlyPlaying player
+
+                gs =
+                    case winner of
+                        Just p ->
+                            Winner p
+
+                        Nothing ->
+                            CurrentlyPlaying player
             in
-            
-                { grid = grid
-                , player = player
-                , gameState = gs
-                }
+            ( { grid = grid
+              , player = player
+              , gameState = gs
+              }
+            , Cmd.none
+            )
+
+        PlayerGenerated player ->
+            ( { model | player = player }
+            , Cmd.none
+            )
 
 
 updateGrid : Grid -> Grid
