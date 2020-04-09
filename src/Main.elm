@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Random
-
+import Time
 
 main =
     Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
@@ -14,6 +14,7 @@ main =
 type Msg
     = Click Int
     | PlayerGenerated Player
+    | Tick Time.Posix
 
 
 type Player
@@ -42,18 +43,21 @@ type GameState
 
 
 type alias Model =
-    { grid : Grid, player : Player, gameState : GameState }
+    { grid : Grid, player : Player, gameState : GameState, time: Int }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { grid = List.repeat 9 Blank, player = Naughty, gameState = CurrentlyPlaying Naughty }, Random.generate PlayerGenerated getRandomPlayer )
+    ( { grid = List.repeat 9 Blank, player = Naughty, gameState = CurrentlyPlaying Naughty, time = 10 }, Random.generate PlayerGenerated getRandomPlayer )
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    case model.gameState of
+        CurrentlyPlaying _ ->
+            Time.every 1000 Tick
 
+        _ -> Sub.none
 
 getRandomPlayer : Random.Generator Player
 getRandomPlayer =
@@ -156,15 +160,34 @@ update msg model =
                         Nothing ->
                             CurrentlyPlaying player
             in
-            ( { grid = grid
+            ( { model | grid = grid
               , player = player
               , gameState = gs
+              , time = 10
               }
             , Cmd.none
             )
 
         PlayerGenerated player ->
             ( { model | player = player }
+            , Cmd.none
+            )
+
+        Tick _ ->
+            let
+                newTime = model.time - 1
+
+                gs =
+                    if newTime == 0 then
+                        if model.player == Naughty then
+                            Winner Crossy
+                        else
+                            Winner Naughty
+                    else
+                        CurrentlyPlaying model.player
+
+            in
+            ( { model | time = newTime, gameState = gs }
             , Cmd.none
             )
 
@@ -212,6 +235,11 @@ view model =
             text (viewPlayer player ++ " has done it 🎉")
 
         _ ->
+            let
+                fontSize = if model.time <= 3 then
+                    String.fromInt ((4 - model.time) * 2) ++ "rem"
+                    else "2rem"
+            in
             div
                 [ style "height" "100vh"
                 , style "width" "100vw"
@@ -222,4 +250,12 @@ view model =
                 [ div []
                     (List.indexedMap viewSquare model.grid)
                 , h1 [] [ text (viewPlayer model.player) ]
+                , time [
+                    style "position" "absolute"
+                    , style "bottom" "20px"
+                    , style "right" "20px"
+                    , style "transition" "font-size 200ms"
+                    , style "font-size"  fontSize
+                    , style "color" (if model.time <= 3 then "crimson" else "black")
+                ] [ text (String.fromInt model.time) ]
                 ]
