@@ -160,7 +160,8 @@ update msg model =
                         Nothing ->
                             CurrentlyPlaying player
             in
-            ( { model | grid = grid
+            ( { model
+              | grid = grid
               , player = player
               , gameState = gs
               , time = 10
