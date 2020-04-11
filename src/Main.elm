@@ -239,7 +239,8 @@ view model =
             let
                 fontSize = if model.time <= 3 then
                     String.fromInt ((4 - model.time) * 2) ++ "rem"
-                    else "2rem"
+                else
+                    "2rem"
             in
             div
                 [ style "height" "100vh"
