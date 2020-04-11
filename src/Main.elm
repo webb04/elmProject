@@ -233,7 +233,17 @@ view : Model -> Html Msg
 view model =
     case model.gameState of
         Winner player ->
-            text (viewPlayer player ++ " has done it 🎉")
+            div
+                [ style "height" "100vh"
+                , style "width" "100vw"
+                , style "display" "flex"
+                , style "justify-content" "center"
+                , style "align-items" "center"
+                , style "font-family" "-apple-system, BlinkMacSystemFont"
+                ]
+                [
+                text (viewPlayer player ++ " has done it 🎉")
+                ]
 
         _ ->
             let
@@ -249,10 +259,17 @@ view model =
                 , style "display" "flex"
                 , style "justify-content" "center"
                 , style "align-items" "center"
+                , style "font-family" "-apple-system, BlinkMacSystemFont"
                 ]
                 [ div []
                     (List.indexedMap viewSquare model.grid)
-                , h1 [] [ text (viewPlayer model.player) ]
+                , h1 [
+                    style "position" "absolute"
+                    , style "bottom" "20px"
+                    , style "left" "20px"
+                    , style "margin" "0"
+                    , style "font-weight" "400"
+                ] [ text (viewPlayer model.player) ]
                 , time
                     [ style "position" "absolute"
                     , style "bottom" "20px"
