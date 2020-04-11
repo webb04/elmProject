@@ -252,8 +252,8 @@ view model =
                 [ div []
                     (List.indexedMap viewSquare model.grid)
                 , h1 [] [ text (viewPlayer model.player) ]
-                , time [
-                    style "position" "absolute"
+                , time
+                    [ style "position" "absolute"
                     , style "bottom" "20px"
                     , style "right" "20px"
                     , style "transition" "font-size 200ms"
