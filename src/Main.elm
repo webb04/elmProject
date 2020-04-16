@@ -269,7 +269,7 @@ view model =
                     , style "left" "20px"
                     , style "margin" "0"
                     , style "font-weight" "400"
-                ] [ text (viewPlayer model.player) ]
+                    ] [ text (viewPlayer model.player) ]
                 , time
                     [ style "position" "absolute"
                     , style "bottom" "20px"
