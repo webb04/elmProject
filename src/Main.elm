@@ -263,8 +263,8 @@ view model =
                 ]
                 [ div []
                     (List.indexedMap viewSquare model.grid)
-                , h1 [
-                    style "position" "absolute"
+                , h1
+                    [ style "position" "absolute"
                     , style "bottom" "20px"
                     , style "left" "20px"
                     , style "margin" "0"
